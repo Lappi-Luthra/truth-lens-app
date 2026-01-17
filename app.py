@@ -95,5 +95,7 @@ if uploaded_file:
             
             # Risk Indicator
             risk_color = "🔴" if "HIGH RISK" in final_verdict.choices[0].message.content.upper() else "🟢"
-            st.metric("Risk Level", f"{risk_color} Verified")
+st.metric("Risk Level", f"{risk_color} Verified")
             st.markdown("</div>", unsafe_allow_html=True)
+` # <--- Check if this backtick is there!
+            }
