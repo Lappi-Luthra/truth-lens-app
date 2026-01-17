@@ -1,0 +1,15 @@
+{
+  "name": "Truth Lens Forensic",
+  "short_name": "Truth Lens",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#00f2fe",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1063/1063226.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
