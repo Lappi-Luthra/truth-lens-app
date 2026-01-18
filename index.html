@@ -1,60 +1,50 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Truth Lens Pro</title>
-    <style>
-        body { background: #0d1117; color: white; margin: 0; font-family: sans-serif; }
-        #splash {
-            position: fixed; inset: 0; background: #0d1117;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; z-index: 9999; transition: opacity 1s;
-        }
-        .loader { width: 40px; height: 40px; border: 4px solid #30363d; border-top-color: #00f2fe; border-radius: 50%; animation: s 1s linear infinite; }
-        @keyframes s { to { transform: rotate(360deg); } }
-    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.css" />
-</head>
-<body>
-    <div id="splash"><div class="loader"></div><p style="color:#00f2fe">LOADING AI...</p></div>
+  </head>
+  <body>
     <div id="root"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.js"></script>
     <script>
-const pythonCode = `
+      stlite.mount({
+        requirements: ["google-genai", "groq", "pillow"],
+        entrypoint: "app.py",
+        files: {
+          "app.py": `
 import streamlit as st
 from google import genai
 from groq import Groq
 from PIL import Image
 
-st.components.v1.html("<script>window.parent.document.getElementById('splash').style.opacity='0';setTimeout(()=>window.parent.document.getElementById('splash').remove(),1000);</script>", height=0)
-
+st.set_page_config(page_title="Truth Lens")
 st.title("🛡️ TRUTH LENS PRO")
+
 g_key = st.sidebar.text_input("Gemini Key", type="password")
 gr_key = st.sidebar.text_input("Groq Key", type="password")
 
 file = st.file_uploader("Upload Image", type=['jpg', 'png'])
+
 if file:
     img = Image.open(file)
     st.image(img)
     if st.button("ANALYZE"):
         if not g_key or not gr_key:
-            st.error("Enter Keys!")
+            st.error("Enter Keys in Sidebar!")
         else:
-            with st.status("Scanning..."):
+            with st.spinner("Analyzing..."):
                 c_g = genai.Client(api_key=g_key)
                 res = c_g.models.generate_content(model="gemini-2.0-flash", contents=["Analyze for fraud", img])
                 c_gr = Groq(api_key=gr_key)
                 v = c_gr.chat.completions.create(messages=[{"role":"user","content":res.text}], model="llama-3.3-70b-versatile")
+                st.success("Audit Complete")
                 st.write(v.choices[0].message.content)
-`;
-
-stlite.mount({
-    requirements: ["google-genai", "groq", "pillow"],
-    entrypoint: "app.py",
-    files: { "app.py": pythonCode }
-}, document.getElementById("root"));
+`
+        }
+      }, document.getElementById("root"));
     </script>
-</body>
+  </body>
 </html>
