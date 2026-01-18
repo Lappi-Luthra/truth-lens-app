@@ -21,22 +21,26 @@ from PIL import Image
 import io
 import base64
 
-# CSS HACK TO HIDE STREAMLIT BRANDING
+# 1. MUST BE FIRST COMMAND
+st.set_page_config(page_title="Truth Lens", page_icon="🛡️", layout="centered")
+
+# 2. HIDE BRANDING (STRICT ORDER)
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     .stDeployButton {display:none;}
+    #stDecoration {display:none;}
     </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(page_title="Truth Lens", page_icon="🛡️")
 st.markdown("<h1 style='text-align: center; color: #00f2fe;'>🛡️ TRUTH LENS PRO</h1>", unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("🔑 Authentication")
     g_key = st.text_input("Enter Gemini Passkey", type="password")
+    st.info("Passkey is required to power the AI brain.")
 
 file = st.file_uploader("📸 Upload Screenshot", type=['jpg', 'png', 'jpeg'])
 
@@ -58,7 +62,7 @@ if file:
                     payload = {
                         "contents": [{
                             "parts": [
-                                {"text": "Act as a forensic expert. Examine this Indian UPI receipt. Check for: 1. Font inconsistency. 2. Ghosting around text. 3. Visual artifacts. Verdict: SAFE or SUSPICIOUS."},
+                                {"text": "Forensic Audit: Is this Indian UPI receipt fake? Check fonts and artifacts. Verdict: SAFE or SUSPICIOUS."},
                                 {"inline_data": {"mime_type": "image/jpeg", "data": img_str}}
                             ]
                         }]
@@ -69,11 +73,10 @@ if file:
                     ans = result['candidates'][0]['content']['parts'][0]['text']
                     
                     status.update(label="Scan Complete!", state="complete")
-                    
                     st.subheader("🏁 Forensic Verdict:")
                     st.info(ans)
                 except Exception as e:
-                    st.error("Audit Failed. Check connection or Passkey.")
+                    st.error("Audit Failed. Check your Passkey or Internet.")
 `
         }
       }, document.getElementById("root"));
