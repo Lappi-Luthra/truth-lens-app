@@ -21,27 +21,24 @@ from PIL import Image
 import io
 import base64
 
-# 1. CSS HACK TO HIDE "MADE WITH STREAMLIT" AND FOOTER
-hide_style = """
+# CSS HACK TO HIDE STREAMLIT BRANDING
+st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stApp { bottom: 0px; }
+    .stDeployButton {display:none;}
     </style>
-"""
-st.markdown(hide_style, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.set_page_config(page_title="Truth Lens", page_icon="🛡️")
 st.markdown("<h1 style='text-align: center; color: #00f2fe;'>🛡️ TRUTH LENS PRO</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #8892b0;'>Digital Forensic Audit Tool</p>", unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("🔑 Authentication")
     g_key = st.text_input("Enter Gemini Passkey", type="password")
-    st.caption("v2.1.0 | No-Data-Retention Policy")
 
-file = st.file_uploader("📸 Upload Screenshot for Audit", type=['jpg', 'png', 'jpeg'])
+file = st.file_uploader("📸 Upload Screenshot", type=['jpg', 'png', 'jpeg'])
 
 if file:
     img = Image.open(file)
@@ -49,19 +46,19 @@ if file:
     
     if st.button("🚀 EXECUTE FORENSIC SCAN"):
         if not g_key:
-            st.error("Access Denied: Please enter Passkey in sidebar.")
+            st.error("Please enter Passkey in sidebar.")
         else:
-            with st.status("Analyzing Pixel Gradients...", expanded=True) as status:
+            with st.status("Analyzing Pixels...", expanded=True) as status:
                 try:
                     buffered = io.BytesIO()
                     img.save(buffered, format="JPEG")
                     img_str = base64.b64encode(buffered.getvalue()).decode()
 
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={g_key}"
+                    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + g_key
                     payload = {
                         "contents": [{
                             "parts": [
-                                {"text": "Act as a forensic expert. Examine this Indian UPI receipt. Check for: 1. Font inconsistency in amount. 2. Ghosting around Transaction ID. 3. Visual artifacts in the bank logo. Provide a clear Verdict: SAFE or SUSPICIOUS."},
+                                {"text": "Act as a forensic expert. Examine this Indian UPI receipt. Check for: 1. Font inconsistency. 2. Ghosting around text. 3. Visual artifacts. Verdict: SAFE or SUSPICIOUS."},
                                 {"inline_data": {"mime_type": "image/jpeg", "data": img_str}}
                             ]
                         }]
@@ -74,7 +71,7 @@ if file:
                     status.update(label="Scan Complete!", state="complete")
                     
                     st.subheader("🏁 Forensic Verdict:")
-                    st.markdown(f"```\\n{ans}\\n```")
+                    st.info(ans)
                 except Exception as e:
                     st.error("Audit Failed. Check connection or Passkey.")
 `
