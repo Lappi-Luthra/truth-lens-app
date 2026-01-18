@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.js"></script>
     <script>
       stlite.mount({
-        requirements: ["pillow", "requests"], // Removed the heavy AI libraries
+        requirements: ["pillow", "requests"],
         entrypoint: "app.py",
         files: {
           "app.py": `
@@ -21,37 +21,47 @@ from PIL import Image
 import io
 import base64
 
-st.set_page_config(page_title="Truth Lens")
-st.title("🛡️ TRUTH LENS PRO")
+# 1. CSS HACK TO HIDE "MADE WITH STREAMLIT" AND FOOTER
+hide_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .stApp { bottom: 0px; }
+    </style>
+"""
+st.markdown(hide_style, unsafe_allow_html=True)
 
-# Use a lighter approach for keys
+st.set_page_config(page_title="Truth Lens", page_icon="🛡️")
+st.markdown("<h1 style='text-align: center; color: #00f2fe;'>🛡️ TRUTH LENS PRO</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #8892b0;'>Digital Forensic Audit Tool</p>", unsafe_allow_html=True)
+
 with st.sidebar:
-    st.header("API Configuration")
-    g_key = st.text_input("Gemini API Key", type="password")
+    st.header("🔑 Authentication")
+    g_key = st.text_input("Enter Gemini Passkey", type="password")
+    st.caption("v2.1.0 | No-Data-Retention Policy")
 
-file = st.file_uploader("Upload Evidence", type=['jpg', 'png', 'jpeg'])
+file = st.file_uploader("📸 Upload Screenshot for Audit", type=['jpg', 'png', 'jpeg'])
 
 if file:
     img = Image.open(file)
     st.image(img, use_container_width=True)
     
-    if st.button("🚀 RUN FORENSIC SCAN"):
+    if st.button("🚀 EXECUTE FORENSIC SCAN"):
         if not g_key:
-            st.error("Please enter your Gemini API Key!")
+            st.error("Access Denied: Please enter Passkey in sidebar.")
         else:
-            with st.spinner("Analyzing Pixels via Gemini Flash..."):
+            with st.status("Analyzing Pixel Gradients...", expanded=True) as status:
                 try:
-                    # Convert image to Base64 for the API
                     buffered = io.BytesIO()
                     img.save(buffered, format="JPEG")
                     img_str = base64.b64encode(buffered.getvalue()).decode()
 
-                    # Direct API Call (No heavy SDK needed)
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={g_key}"
                     payload = {
                         "contents": [{
                             "parts": [
-                                {"text": "Analyze this Indian UPI/Payment screenshot for signs of forgery, font mismatch, or digital tampering. Provide a risk score."},
+                                {"text": "Act as a forensic expert. Examine this Indian UPI receipt. Check for: 1. Font inconsistency in amount. 2. Ghosting around Transaction ID. 3. Visual artifacts in the bank logo. Provide a clear Verdict: SAFE or SUSPICIOUS."},
                                 {"inline_data": {"mime_type": "image/jpeg", "data": img_str}}
                             ]
                         }]
@@ -59,14 +69,14 @@ if file:
                     
                     response = requests.post(url, json=payload)
                     result = response.json()
-                    
-                    # Display Result
                     ans = result['candidates'][0]['content']['parts'][0]['text']
-                    st.subheader("Forensic Verdict:")
-                    st.write(ans)
-                    st.success("Analysis Complete")
+                    
+                    status.update(label="Scan Complete!", state="complete")
+                    
+                    st.subheader("🏁 Forensic Verdict:")
+                    st.markdown(f"```\\n{ans}\\n```")
                 except Exception as e:
-                    st.error("Error: Ensure your API Key is correct and has Gemini 1.5 access.")
+                    st.error("Audit Failed. Check connection or Passkey.")
 `
         }
       }, document.getElementById("root"));
